@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 400px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .logo img {
+            max-width: 100px;
+            margin-bottom: 20px;
+        }
+        .otp {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f0f8ff;
+            display: inline-block;
+            border-radius: 5px;
+        }
+        .footer {
+            font-size: 12px;
+            color: #555;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo">
+            <img src="https://dummyimage.com/200X100/ffffff/007bff.png&text=AuthApp" alt="AuthApp Logo">
+        </div>
+
+        <!-- OTP Message -->
+        <h2>Your OTP Code</h2>
+        <p>Use the code below to verify your identity:</p>
+        <div class="otp">{{otp}}</div>
+        <p>This OTP is valid for 5 minutes.</p>
+
+        <!-- Footer -->
+        <div class="footer">
+            If you didn't request this, please ignore this email.
+        </div>
+    </div>
+</body>
+</html>
