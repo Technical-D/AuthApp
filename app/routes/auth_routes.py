@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models.user import User
 import random
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
@@ -29,6 +29,7 @@ def register():
     return jsonify({"message": "User registered successfully!"}), 201
 
 @auth_bp.route("/send-otp", methods=["POST"])
+@limiter.limit("5 per hour")
 def send_otp():
     data = request.get_json()
     email = data.get("email")
