@@ -10,8 +10,8 @@ def send_otp_email(email, otp):
             subject="OTP Verification",
             recipients=[email]
         )
-        msg.html = render_template("otp_template.html", otp=otp)
-        mail.send(msg)
+        # msg.html = render_template("otp_template.html", otp=otp)
+        # mail.send(msg)
         return True
     except Exception as e:
         print(f"Error in sending email {e}")

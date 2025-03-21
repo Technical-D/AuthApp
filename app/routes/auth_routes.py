@@ -4,6 +4,7 @@ from app.models.user import User
 import random
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from app.services.mail_service import send_otp_email
+import re
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -35,6 +36,9 @@ def send_otp():
     email = data.get("email")
     if not email:
         return jsonify({"error": "Email is required"})
+    
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return jsonify({"error": "Invalid email"}), 400
 
     user = User.query.filter_by(email=email).first()
     if not user:
@@ -51,7 +55,7 @@ def send_otp():
     # Commiting chnages to db
     db.session.commit()
 
-    return jsonify({"message": "OTP sent to your email. Use that to verify yourself."}), 200
+    return jsonify({"message": "OTP sent to your email. Use that to verify yourself.", "otp":otp}), 200
 
 @auth_bp.route("/verify-otp", methods=["POST"])
 def verify_otp():
