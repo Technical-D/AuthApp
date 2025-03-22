@@ -4,9 +4,12 @@ from app.error_handlers import handle_ratelimit_error
 from app.routes import register_blueprints
 from config import config_options
 import os
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
+
+    CORS(app)
 
     # Load Configuration
     env = os.getenv("FLASK_ENV", "development")

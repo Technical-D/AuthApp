@@ -30,7 +30,7 @@ def register():
     return jsonify({"message": "User registered successfully!"}), 201
 
 @auth_bp.route("/send-otp", methods=["POST"])
-@limiter.limit("5 per hour")
+@limiter.limit("25 per hour")
 def send_otp():
     data = request.get_json()
     email = data.get("email")
