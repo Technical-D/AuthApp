@@ -1,5 +1,5 @@
 from flask import Flask
-from app.extensions import db, migrate, jwt, mail, limiter
+from app.extensions import db, migrate, jwt, mail, limiter, scheduler
 from app.error_handlers import handle_ratelimit_error
 from app.routes import register_blueprints
 from config import config_options
@@ -22,8 +22,15 @@ def create_app():
     mail.init_app(app)
     limiter.init_app(app)
 
+
     # Register Blueprints
     register_blueprints(app)
+
+    # registering the tasks
+    from app.services.event_scheduler import schedule_reminder_task
+    with app.app_context():
+        schedule_reminder_task(app)
+        scheduler.start()
 
     # Registering error handler
     handle_ratelimit_error(app)

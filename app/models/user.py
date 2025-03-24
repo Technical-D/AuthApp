@@ -10,8 +10,8 @@ class User(db.Model):
     otp = db.Column(db.String(6), nullable=True)
     otp_expiry = db.Column(db.DateTime, nullable=True)
     is_verified = db.Column(db.Boolean, default=False)  
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
     events = db.relationship("Event", backref="user", lazy=True)
 
@@ -21,11 +21,8 @@ class User(db.Model):
 
     def set_otp(self, otp):
         self.otp = otp
-        self.otp_expiry = datetime.now(timezone.utc) + timedelta(minutes=5)
+        self.otp_expiry = datetime.now() + timedelta(minutes=5)
 
-    def is_otp_valid(self, otp):
-        if self.otp_expiry and self.otp_expiry.tzinfo is None:
-            self.otp_expiry = self.otp_expiry.replace(tzinfo=timezone.utc)  
-        
-        current_time = datetime.now(timezone.utc)
+    def is_otp_valid(self, otp):  
+        current_time = datetime.now()
         return self.otp == str(otp) and current_time < self.otp_expiry

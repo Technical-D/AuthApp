@@ -5,6 +5,7 @@ from app.models.event import Event
 from flask import request, jsonify
 from app.extensions import db
 from datetime import datetime
+from app.extensions import scheduler
 
 event_bp = Blueprint("event", __name__)
 
@@ -20,6 +21,8 @@ def get_events():
     ).order_by(
         Event.event_date.asc()
     ).all()
+
+    print(scheduler.get_jobs())
 
     return jsonify([{"title": event.title, "event_date": event.event_date.strftime("%Y-%m-%d %H:%M:%S"), "reminded": event.reminded} for event in events])
 
