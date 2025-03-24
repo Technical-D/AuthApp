@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.extensions import db, limiter
 from app.models.user import User
 import random
-from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
+from flask_jwt_extended import create_access_token
 from app.services.mail_service import send_otp_email
 import re
 
@@ -88,21 +88,3 @@ def verify_otp():
         })
     
     return jsonify({"error": "Invalid or expired OTP"}), 400
-
-@auth_bp.route("/profile", methods=["GET"])
-@jwt_required() 
-def profile():
-    # Get the current user's ID from the JWT token
-    current_user_id = get_jwt_identity()  # Retrieve the user ID from the token
-
-    # Find the user in the database using the ID from the token
-    user = User.query.get(current_user_id)
-    if user:
-        return jsonify({
-            "message": "Welcome to your profile!",
-            "id": user.id,
-            "email": user.email,
-            "name": user.name
-        })
-    else:
-        return jsonify({"error": "User not found"}), 404
