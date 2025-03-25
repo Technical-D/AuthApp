@@ -5,9 +5,11 @@ from app.extensions import scheduler, logger
 from app.services.mail_service import send_reminder_email
 from apscheduler.triggers.interval import IntervalTrigger
 
-def send_event_reminders(app):
+reminder_lock = {}
 
+def send_event_reminders(app):
     with app.app_context():
+        global reminder_lock
         try:
             now = datetime.now()
             logger.info(f"Checking for upcoming events at {now}")
@@ -16,14 +18,21 @@ def send_event_reminders(app):
                 Event.event_date >= now,
                 Event.reminded == False
             ).all()
-            logger.info(f"Event detail {upcoming_events}")
+            logger.info(f"Event detail: Found {len(upcoming_events)} Ids:{upcoming_events}")
+
             for event in upcoming_events:
+                if event.id in reminder_lock:
+                    logger.info(f"Skipping duplicate reminder for event {event.id}")
+                    continue
+
                 user = db.session.query(User).get(event.user_id)
                 if user:
                     if send_reminder_email(event, user):
                         logger.info(f"Reminder sent for event {event.id} to {user.email}")
                         event.reminded = True
                         db.session.commit()
+                        reminder_lock[event.id] = True
+                        logger.info(f"Reminder sent for event {event.id} to {user.email}")
                     else:
                         logger.error(f"Failed to send reminder for event {event.id}")
                         db.session.rollback()
@@ -33,10 +42,12 @@ def send_event_reminders(app):
             db.session.rollback()
 
 def schedule_reminder_task(app):
-    scheduler.add_job(
-        func= lambda: send_event_reminders(app),  
-        trigger=IntervalTrigger(minutes=2),  
-        id='reminder_task',  
-        replace_existing=True,
-        max_instances=1
-    )
+    if not scheduler.get_job('reminder_task'):
+        logger.info("Scheduling reminder job...")
+        scheduler.add_job(
+            func= lambda: send_event_reminders(app),  
+            trigger=IntervalTrigger(minutes=2),  
+            id='reminder_task',  
+            replace_existing=True,
+            max_instances=1
+        )

@@ -29,8 +29,9 @@ def create_app():
     # registering the tasks
     from app.services.event_scheduler import schedule_reminder_task
     with app.app_context():
-        schedule_reminder_task(app)
-        scheduler.start()
+        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+            schedule_reminder_task(app)
+            scheduler.start()
 
     # Registering error handler
     handle_ratelimit_error(app)

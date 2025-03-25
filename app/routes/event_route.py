@@ -5,7 +5,7 @@ from app.models.event import Event
 from flask import request, jsonify
 from app.extensions import db
 from datetime import datetime
-from app.extensions import scheduler
+from app.extensions import logger
 
 event_bp = Blueprint("event", __name__)
 
@@ -13,18 +13,15 @@ event_bp = Blueprint("event", __name__)
 @jwt_required()
 def get_events():
     user_id = get_jwt_identity()
-
-    now = datetime.utcnow()
+    now = datetime.now()
     events = db.session.query(Event).filter(
         Event.user_id == user_id,
-        Event.event_date >= now
+        Event.event_date >=  now
     ).order_by(
         Event.event_date.asc()
     ).all()
 
-    print(scheduler.get_jobs())
-
-    return jsonify([{"title": event.title, "event_date": event.event_date.strftime("%Y-%m-%d %H:%M:%S"), "reminded": event.reminded} for event in events])
+    return jsonify([{"title": event.title, "event_date": event.event_date.strftime("%Y-%m-%d %H:%M:%S"), "reminded": "Yes" if event.reminded else "No"} for event in events])
 
 @event_bp.route("/add", methods=["POST"])
 @jwt_required()
@@ -37,13 +34,15 @@ def add_events():
     event_date_str = data.get("event_date")
 
     if not title:
-        return jsonify({"error": "Title is required"})
+        return jsonify({"error": "Title is required"}), 400
     
     if not event_date_str:
-        return jsonify({"error": "Event date is required"})
+        return jsonify({"error": "Event date is required"}), 400
 
     try:
-        if len(event_date_str) == 13:
+        if len(event_date_str) == 16:
+            event_date = datetime.strptime(event_date_str, "%Y-%m-%d %H:%M")
+        elif len(event_date_str) == 13:
             event_date = datetime.strptime(event_date_str, "%Y-%m-%d %H")
         elif len(event_date_str) == 10:
             event_date = datetime.strptime(event_date_str, "%Y-%m-%d")
@@ -52,7 +51,7 @@ def add_events():
     except ValueError as e:
         return jsonify({"error": "Invalid date format. Use YYYY-MM-DD, YYYY-MM-DD HH, or YYYY-MM-DD HH:MM:SS"}), 400
 
-    if event_date <= datetime.utcnow():
+    if event_date <= datetime.now():
         return jsonify({"error": "Event date must be in the future"}), 400
 
     new_event = Event(title=title, event_date=event_date, user_id=user_id)
@@ -65,4 +64,4 @@ def add_events():
         print("Error occured", str(e))
         return jsonify({"error": "An error occurred while adding the event"}), 500
 
-    return jsonify({"message": "Event added sucessfully."})
+    return jsonify({"message": "Event added sucessfully."}), 201
