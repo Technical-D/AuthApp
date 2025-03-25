@@ -29,7 +29,7 @@ def create_app():
     # registering the tasks
     from app.services.event_scheduler import schedule_reminder_task
     with app.app_context():
-        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or os.environ.get("GUNICORN_CMD_ARGS") is None:
             schedule_reminder_task(app)
             scheduler.start()
 
